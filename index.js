@@ -11,6 +11,11 @@ const jwtSecret = process.env.JWT_ACCESS_SECRET;
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("This Server is Running");
+});
+
+// middleware token
 const verifyToken = (req, res, next) => {
   const authorization = req.headers.authorization;
 
@@ -34,21 +39,15 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-app.get("/", (req, res) => {
-  res.send("This Server is Running");
-});
-
+// jwt token related api
 app.post("/jwt", (req, res) => {
   const user = req.body;
-
   if (!jwtSecret) {
     return res.status(500).send({ message: "JWT secret is not configured" });
   }
-
   const token = jwt.sign(user, jwtSecret, {
     expiresIn: "7d",
   });
-
   res.send({ token });
 });
 
