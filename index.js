@@ -1,19 +1,59 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = 3000;
+const jwtSecret = process.env.JWT_ACCESS_SECRET;
 
 // middleware
 app.use(cors());
 app.use(express.json());
 
-// userName :
-// password:
+const verifyToken = (req, res, next) => {
+  const authorization = req.headers.authorization;
+
+  if (!jwtSecret) {
+    return res.status(500).send({ message: "JWT secret is not configured" });
+  }
+
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+
+  const token = authorization.split(" ")[1];
+
+  jwt.verify(token, jwtSecret, (error, decoded) => {
+    if (error) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+
+    req.decoded = decoded;
+    next();
+  });
+};
 
 app.get("/", (req, res) => {
   res.send("This Server is Running");
+});
+
+app.post("/jwt", (req, res) => {
+  const user = req.body;
+
+  if (!jwtSecret) {
+    return res.status(500).send({ message: "JWT secret is not configured" });
+  }
+
+  const token = jwt.sign(user, jwtSecret, {
+    expiresIn: "7d",
+  });
+
+  res.send({ token });
+});
+
+app.get("/verify-token", verifyToken, (req, res) => {
+  res.send({ valid: true, user: req.decoded });
 });
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.aazhdn7.mongodb.net/?appName=Cluster0`;
