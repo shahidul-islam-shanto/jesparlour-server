@@ -72,6 +72,7 @@ async function run() {
     await client.connect();
 
     const servicesCollection = client.db("jesparlour").collection("services");
+    const addCardCollection = client.db("jesparlour").collection("addCard");
 
     app.get("/services", async (req, res) => {
       const items = req.body;
@@ -85,6 +86,13 @@ async function run() {
       const result = await servicesCollection.findOne(query);
       res.send(result);
     });
+
+    app.post("/addCard", async (req, res) => {
+      const card = req.body;
+      const result = await addCardCollection.insertOne(card);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
