@@ -99,6 +99,16 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/addToCart/:id", async (req, res) => {
+      const id = req.params.id;
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).send({ message: "invalid cart item id" });
+      }
+      const query = { _id: new ObjectId(id) };
+      const result = await addCardCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
